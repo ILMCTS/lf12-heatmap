@@ -4,6 +4,15 @@
 			userId: 'scherwinsky_leander',
 			firstName: 'Leander',
 			lastName: 'Scherwinsky',
+			startDate: '2024-10-08T06:00:00.000Z',
+			endDate: '2024-10-10T15:30:00.000Z',
+			status: 'A',
+			customText: ''
+		},
+		{
+			userId: 'scherwinsky_leander',
+			firstName: 'Leander',
+			lastName: 'Scherwinsky',
 			startDate: '2024-10-17T06:00:00.000Z',
 			endDate: '2024-10-17T07:30:00.000Z',
 			status: 'S',
@@ -15,7 +24,7 @@
 	const reasonColors: Record<string, string> = {
 		A: 'bg-green-500', // Attest
 		P: 'bg-red-200', // Privat
-		S: 'bg-red-700'
+		S: 'bg-red-700' // Schulische Abwesenheit
 	};
 
 	let firstDate: Date | null = null;
@@ -53,7 +62,11 @@
 </script>
 
 {#if firstDate && lastDate && monthIdx && monthDayCount && year}
-	<div>Monat: {monthIdx + 1}</div>
+	<div class="text-xl">
+		Monat: {new Intl.DateTimeFormat('de', { month: 'long' }).formatToParts(
+			new Date(year, monthIdx)
+		)[0].value}
+	</div>
 
 	<div class="grid grid-flow-row text-center">
 		<div class="grid grid-flow-col">
@@ -69,19 +82,33 @@
 		{#each weeks as week}
 			<div class="grid grid-cols-7 grid-flow-col">
 				{#each week as { day, display }}
+					{@const date = new Date(year, monthIdx, day)}
 					{@const absence =
-						day &&
-						data.find(
-							(x) => new Date(x.startDate).getDate() <= day && day <= new Date(x.endDate).getDate()
-						)}
+						display &&
+						data.find((x) => {
+							const startDate = new Date(x.startDate);
+							const endDate = new Date(x.endDate);
 
-					<div
-						class="p-2 {absence
-							? reasonColors[absence.status] || 'bg-blue-400'
-							: day % 2 === 0
-								? 'bg-slate-400'
-								: 'bg-gray-500'}"
-					>
+							// too early
+							if (date.getMonth() < startDate.getMonth()) {
+								return false;
+							}
+
+							// too late
+							if (endDate.getMonth() < date.getMonth()) {
+								return false;
+							}
+
+							// first or last day of absence
+							if (date.getDate() === startDate.getDate() || date.getDate() === endDate.getDate()) {
+								return true;
+							}
+
+							// within time frame
+							return startDate < date && date < endDate;
+						})}
+
+					<div class="p-2 {absence ? reasonColors[absence.status] || 'bg-blue-400' : ''}">
 						{#if display}
 							{day}
 						{/if}
