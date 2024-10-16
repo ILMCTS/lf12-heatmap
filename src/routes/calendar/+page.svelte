@@ -12,6 +12,11 @@
 	];
 
 	const daysPerWeek = 7;
+	const reasonColors: Record<string, string> = {
+		A: 'bg-green-500', // Attest
+		P: 'bg-red-200', // Privat
+		S: 'bg-gray-500'
+	};
 
 	let firstDate: Date | null = null;
 	let lastDate: Date | null = null;
@@ -29,17 +34,17 @@
 		monthDayCount = new Date(year, monthIdx + 1, 0).getDate();
 		startMondayOffset = 1;
 
+		// October 2024: 31 + 1 -> 32
 		const fullWeeks = monthDayCount + startMondayOffset;
-		const fillDays = Math.ceil(fullWeeks / daysPerWeek);
+		const fillDays = Math.ceil(fullWeeks / daysPerWeek); // ceil(32 / 7) -> 5
 
+		// October 2024: 32 + 5 - (7 - 5) -> 35 (1 for start offset, 3 for final offset)
 		for (let i = 0; i < fullWeeks + fillDays - (daysPerWeek - fillDays); i += 1) {
 			const week = Math.trunc(i / daysPerWeek);
 			const day = i - startMondayOffset + 1;
 
 			weeks[week] ??= [];
 			weeks[week].push(i < startMondayOffset || monthDayCount < i ? null : day);
-
-			console.log(week + 1, day);
 		}
 	}
 </script>
@@ -51,19 +56,29 @@
 
 	<div class="grid grid-flow-row text-center">
 		<div class="grid grid-flow-col">
-			<div>Montag</div>
-			<div>Dienstag</div>
-			<div>Mittwoch</div>
-			<div>Donnerstag</div>
-			<div>Freitag</div>
-			<div>Samstag</div>
-			<div>Sonntag</div>
+			<div class="w-8 h-8">Montag</div>
+			<div class="w-8 h-8">Dienstag</div>
+			<div class="w-8 h-8">Mittwoch</div>
+			<div class="w-8 h-8">Donnerstag</div>
+			<div class="w-8 h-8">Freitag</div>
+			<div class="w-8 h-8">Samstag</div>
+			<div class="w-8 h-8">Sonntag</div>
 		</div>
 
 		{#each weeks as week}
 			<div class="grid grid-flow-col bg-red-500">
 				{#each week as day}
-					<div class="w-8 h-8 bg-fuchsia-500">
+					{@const absence =
+						day &&
+						data.find(
+							(x) => new Date(x.startDate).getDate() <= day && day <= new Date(x.endDate).getDate()
+						)}
+
+					<div
+						class="w-8 h-8 {absence
+							? reasonColors[absence.status] || 'bg-blue-400'
+							: 'bg-fuchsia-400'}"
+					>
 						{#if day}
 							{day}
 						{/if}
