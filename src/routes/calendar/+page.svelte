@@ -30,14 +30,16 @@
 		startMondayOffset = 1;
 
 		const fullWeeks = monthDayCount + startMondayOffset;
+		const fillDays = Math.ceil(fullWeeks / daysPerWeek);
 
-		for (let i = 0; i < fullWeeks + Math.ceil(fullWeeks / 7); i += 1) {
+		for (let i = 0; i < fullWeeks + fillDays - (daysPerWeek - fillDays); i += 1) {
 			const week = Math.trunc(i / daysPerWeek);
+			const day = i - startMondayOffset + 1;
 
 			weeks[week] ??= [];
-			weeks[week].push(
-				i < startMondayOffset || monthDayCount < i ? null : i - startMondayOffset + 1
-			);
+			weeks[week].push(i < startMondayOffset || monthDayCount < i ? null : day);
+
+			console.log(week + 1, day);
 		}
 	}
 </script>
@@ -47,7 +49,7 @@
 
 	<div>Monat: {monthIdx + 1}</div>
 
-	<div class="grid grid-flow-row">
+	<div class="grid grid-flow-row text-center">
 		<div class="grid grid-flow-col">
 			<div>Montag</div>
 			<div>Dienstag</div>
@@ -59,9 +61,9 @@
 		</div>
 
 		{#each weeks as week}
-			<div class="grid grid-flow-col">
+			<div class="grid grid-flow-col bg-red-500">
 				{#each week as day}
-					<div class="w-8 h-8">
+					<div class="w-8 h-8 bg-fuchsia-500">
 						{#if day}
 							{day}
 						{/if}
