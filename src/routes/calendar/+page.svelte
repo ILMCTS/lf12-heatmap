@@ -4,6 +4,15 @@
 			userId: 'scherwinsky_leander',
 			firstName: 'Leander',
 			lastName: 'Scherwinsky',
+			startDate: '2024-10-01T06:00:00.000Z',
+			endDate: '2024-10-03T15:30:00.000Z',
+			status: 'K',
+			customText: ''
+		},
+		{
+			userId: 'scherwinsky_leander',
+			firstName: 'Leander',
+			lastName: 'Scherwinsky',
 			startDate: '2024-10-08T06:00:00.000Z',
 			endDate: '2024-10-10T15:30:00.000Z',
 			status: 'A',
@@ -21,10 +30,13 @@
 	];
 
 	const daysPerWeek = 7;
+
+	// missing: N, O, V
 	const reasonColors: Record<string, string> = {
 		A: 'bg-green-500', // Attest
 		P: 'bg-red-200', // Privat
-		S: 'bg-red-700' // Schulische Abwesenheit
+		S: 'bg-red-700', // Schulische Abwesenheit
+		K: 'bg-red-300' // Krank
 	};
 
 	let firstDate: Date | null = null;
