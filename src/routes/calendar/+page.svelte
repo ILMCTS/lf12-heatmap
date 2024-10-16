@@ -1,6 +1,4 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
-
 	const data = [
 		{
 			userId: 'scherwinsky_leander',
@@ -20,6 +18,8 @@
 	let year: number | null = null;
 	let monthIdx: number | null = null;
 	let monthDayCount: number | null = null;
+	let startMondayOffset: number | null = null;
+	let weeks: (number | null)[][] = [];
 
 	if (data.length > 0) {
 		firstDate = new Date(data[0].startDate);
@@ -27,28 +27,23 @@
 		year = firstDate.getFullYear();
 		monthIdx = firstDate.getMonth();
 		monthDayCount = new Date(year, monthIdx + 1, 0).getDate();
+		startMondayOffset = 1;
+
+		const fullWeeks = monthDayCount + startMondayOffset;
+
+		for (let i = 0; i < fullWeeks + Math.ceil(fullWeeks / 7); i += 1) {
+			const week = Math.trunc(i / daysPerWeek);
+
+			weeks[week] ??= [];
+			weeks[week].push(
+				i < startMondayOffset || monthDayCount < i ? null : i - startMondayOffset + 1
+			);
+		}
 	}
 </script>
 
 {#if firstDate && lastDate && monthIdx && monthDayCount && year}
-	<!-- new Date(year, monthIdx + 1, 0).getDate() -->
-	{@const startMondayOffset = 1}
-	{@const days = new Array(monthDayCount + startMondayOffset).fill(null).reduce((prev, _, i) => {
-		const week = Math.trunc(monthDayCount / 7);
-
-		prev[week] ??= [];
-
-		if (startMondayOffset < i) {
-			prev[week].push(null);
-		} else {
-			const dayInMonth = week * daysPerWeek + (i / 7 + 1);
-
-			prev[week].push(dayInMonth);
-		}
-	}, [])}
-	{@const weekCount = Math.ceil(monthDayCount / 7)}
-
-	{JSON.stringify(days)}
+	{JSON.stringify(weeks)}
 
 	<div>Monat: {monthIdx + 1}</div>
 
@@ -63,16 +58,12 @@
 			<div>Sonntag</div>
 		</div>
 
-		{#each new Array(weekCount).fill(null) as _, i}
+		{#each weeks as week}
 			<div class="grid grid-flow-col">
-				{#each new Array(daysPerWeek).fill(null) as _, j}
-					{@const dayInMonth = i * daysPerWeek + (j + 1)}
-
+				{#each week as day}
 					<div class="w-8 h-8">
-						{#if i === 0 && j < startMondayOffset}
-							{dayInMonth}
-						{:else if dayInMonth <= monthDayCount}
-							{dayInMonth}
+						{#if day}
+							{day}
 						{/if}
 					</div>
 				{/each}
