@@ -15,7 +15,7 @@
 	const reasonColors: Record<string, string> = {
 		A: 'bg-green-500', // Attest
 		P: 'bg-red-200', // Privat
-		S: 'bg-gray-500'
+		S: 'bg-red-700'
 	};
 
 	let firstDate: Date | null = null;
@@ -24,7 +24,7 @@
 	let monthIdx: number | null = null;
 	let monthDayCount: number | null = null;
 	let startMondayOffset: number | null = null;
-	let weeks: (number | null)[][] = [];
+	let weeks: { day: number; display: boolean }[][] = [];
 
 	if (data.length > 0) {
 		firstDate = new Date(data[0].startDate);
@@ -44,30 +44,31 @@
 			const day = i - startMondayOffset + 1;
 
 			weeks[week] ??= [];
-			weeks[week].push(i < startMondayOffset || monthDayCount < i ? null : day);
+			weeks[week].push({
+				day,
+				display: !(i < startMondayOffset || monthDayCount < i)
+			});
 		}
 	}
 </script>
 
 {#if firstDate && lastDate && monthIdx && monthDayCount && year}
-	{JSON.stringify(weeks)}
-
 	<div>Monat: {monthIdx + 1}</div>
 
 	<div class="grid grid-flow-row text-center">
 		<div class="grid grid-flow-col">
-			<div class="w-8 h-8">Montag</div>
-			<div class="w-8 h-8">Dienstag</div>
-			<div class="w-8 h-8">Mittwoch</div>
-			<div class="w-8 h-8">Donnerstag</div>
-			<div class="w-8 h-8">Freitag</div>
-			<div class="w-8 h-8">Samstag</div>
-			<div class="w-8 h-8">Sonntag</div>
+			<div>Montag</div>
+			<div>Dienstag</div>
+			<div>Mittwoch</div>
+			<div>Donnerstag</div>
+			<div>Freitag</div>
+			<div>Samstag</div>
+			<div>Sonntag</div>
 		</div>
 
 		{#each weeks as week}
-			<div class="grid grid-flow-col bg-red-500">
-				{#each week as day}
+			<div class="grid grid-cols-7 grid-flow-col">
+				{#each week as { day, display }}
 					{@const absence =
 						day &&
 						data.find(
@@ -75,11 +76,13 @@
 						)}
 
 					<div
-						class="w-8 h-8 {absence
+						class="p-2 {absence
 							? reasonColors[absence.status] || 'bg-blue-400'
-							: 'bg-fuchsia-400'}"
+							: day % 2 === 0
+								? 'bg-slate-400'
+								: 'bg-gray-500'}"
 					>
-						{#if day}
+						{#if display}
 							{day}
 						{/if}
 					</div>
