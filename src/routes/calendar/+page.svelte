@@ -1,51 +1,30 @@
 <script lang="ts">
-	const data = [
-		{
-			userId: 'scherwinsky_leander',
-			firstName: 'Leander',
-			lastName: 'Scherwinsky',
-			startDate: '2024-10-01T06:00:00.000Z',
-			endDate: '2024-10-03T15:30:00.000Z',
-			status: 'K',
-			customText: ''
-		},
-		{
-			userId: 'scherwinsky_leander',
-			firstName: 'Leander',
-			lastName: 'Scherwinsky',
-			startDate: '2024-10-08T06:00:00.000Z',
-			endDate: '2024-10-10T15:30:00.000Z',
-			status: 'A',
-			customText: ''
-		},
-		{
-			userId: 'scherwinsky_leander',
-			firstName: 'Leander',
-			lastName: 'Scherwinsky',
-			startDate: '2024-10-17T06:00:00.000Z',
-			endDate: '2024-10-17T07:30:00.000Z',
-			status: 'S',
-			customText: 'Kein Unterricht - Tr'
-		},
-		{
-			userId: 'scherwinsky2_leander2',
-			firstName: 'Leander2',
-			lastName: 'Scherwinsky2',
-			startDate: '2024-10-17T06:00:00.000Z',
-			endDate: '2024-10-17T07:30:00.000Z',
-			status: 'S',
-			customText: 'Kein Unterricht - Tr'
-		},
-		{
-			userId: 'scherwinsky23_leander23',
-			firstName: 'Leander23',
-			lastName: 'Scherwinsky23',
-			startDate: '2024-10-25T06:00:00.000Z',
-			endDate: '2024-10-29T07:30:00.000Z',
-			status: 'S',
-			customText: 'Kein Unterricht - Tr'
+	import absencesData from '$lib/absences-data';
+
+	const formatDate = (dateStr: string): string => {
+		// Extract the day, month, year, and time from the input string
+		const day = dateStr.slice(0, 2);
+		const month = dateStr.slice(2, 4);
+		const year = dateStr.slice(4, 8);
+		const time = dateStr.slice(9); // Extract time part after space
+
+		// Format the date as YYYY-MM-DD and combine with time
+		return `${year}-${month}-${day} ${time}`;
+	};
+
+	const data = absencesData.map((x) => {
+		if (x.customText === 'nan') {
+			x.customText = '';
 		}
-	];
+
+		// x.startDate = formatDate(x.startDate);
+		// x.endDate = formatDate(x.endDate);
+
+		return x;
+	});
+
+	console.log(absencesData);
+	console.log(data);
 
 	const daysPerWeek = 7;
 
