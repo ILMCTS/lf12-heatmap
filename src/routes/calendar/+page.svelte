@@ -26,6 +26,24 @@
 			endDate: '2024-10-17T07:30:00.000Z',
 			status: 'S',
 			customText: 'Kein Unterricht - Tr'
+		},
+		{
+			userId: 'scherwinsky2_leander2',
+			firstName: 'Leander2',
+			lastName: 'Scherwinsky2',
+			startDate: '2024-10-17T06:00:00.000Z',
+			endDate: '2024-10-17T07:30:00.000Z',
+			status: 'S',
+			customText: 'Kein Unterricht - Tr'
+		},
+		{
+			userId: 'scherwinsky23_leander23',
+			firstName: 'Leander23',
+			lastName: 'Scherwinsky23',
+			startDate: '2024-10-25T06:00:00.000Z',
+			endDate: '2024-10-29T07:30:00.000Z',
+			status: 'S',
+			customText: 'Kein Unterricht - Tr'
 		}
 	];
 
@@ -95,32 +113,38 @@
 			<div class="grid grid-cols-7 grid-flow-col">
 				{#each week as { day, display }}
 					{@const date = new Date(year, monthIdx, day)}
-					{@const absence =
-						display &&
-						data.find((x) => {
-							const startDate = new Date(x.startDate);
-							const endDate = new Date(x.endDate);
+					{@const absences = !display
+						? []
+						: data.filter((x) => {
+								const startDate = new Date(x.startDate);
+								const endDate = new Date(x.endDate);
 
-							// too early
-							if (date.getMonth() < startDate.getMonth()) {
-								return false;
-							}
+								// too early
+								if (date.getMonth() < startDate.getMonth()) {
+									return false;
+								}
 
-							// too late
-							if (endDate.getMonth() < date.getMonth()) {
-								return false;
-							}
+								// too late
+								if (endDate.getMonth() < date.getMonth()) {
+									return false;
+								}
 
-							// first or last day of absence
-							if (date.getDate() === startDate.getDate() || date.getDate() === endDate.getDate()) {
-								return true;
-							}
+								// first or last day of absence
+								if (
+									date.getDate() === startDate.getDate() ||
+									date.getDate() === endDate.getDate()
+								) {
+									return true;
+								}
 
-							// within time frame
-							return startDate < date && date < endDate;
-						})}
+								// within time frame
+								return startDate < date && date < endDate;
+							})}
+					{@const red = 50}
+					{@const green = 50 * absences.length}
+					{@const blue = 50}
 
-					<div class="p-2 {absence ? reasonColors[absence.status] || 'bg-blue-400' : ''}">
+					<div class="p-2" style="background-color: rgb({red}, {green}, {blue})">
 						{#if display}
 							{day}
 						{/if}
