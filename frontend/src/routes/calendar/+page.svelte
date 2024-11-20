@@ -216,10 +216,15 @@
 								<div
 									class="p-2"
 									style="background-color: rgb({red}, {green}, {blue})"
-									title="{absences.length} absences: {absences
-										.map((x) => `${x.firstName} ${x.lastName}`)
-										.sort()
-										.join(', ')}"
+									title={display
+										? `${absences.length} absences${absences.length === 0 ? '' : ': '}${absences
+												.map(
+													(x) =>
+														`${x.firstName} ${x.lastName}${selectedClass ? '' : ` (${x.class})`}`
+												)
+												.sort()
+												.join(', ')}`
+										: ''}
 								>
 									{#if display}
 										{#if classTest}
