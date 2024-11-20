@@ -1,5 +1,6 @@
 <script lang="ts">
 	import absencesData from '$lib/absences-data';
+	import classTestsData from '$lib/class-tests-data';
 
 	const dateStrLengthWith1Day = 16;
 	const formatDate = (dateStr: string) => {
@@ -44,11 +45,16 @@
 			endDate
 		};
 	});
+	const formattedClassTestsData = classTestsData.map((x) => ({
+		...x,
+		date: new Date(x.date)
+	}));
 
 	let renderKey: string | null = '';
 	let selectedClass: string | null = null;
 	let selectedYearMonth: string | null = Object.keys(yearMonths)[0] || null;
 	let data = formattedAbsencesData;
+	let classTests = formattedClassTestsData;
 	let firstDate: Date | null = null;
 	let year: number | null = null;
 	let monthIdx: number | null = null;
@@ -103,6 +109,12 @@
 			(x) => `${x.startDate.getUTCFullYear()}-${x.startDate.getUTCMonth()}` === selectedYearMonth
 		);
 
+		classTests = (
+			selectedClass
+				? formattedClassTestsData.filter((x) => x.class === selectedClass)
+				: formattedClassTestsData
+		).filter((x) => `${x.date.getUTCFullYear()}-${x.date.getUTCMonth()}` === selectedYearMonth);
+
 		loadDataSet();
 	}
 
@@ -151,6 +163,7 @@
 				<div class="grid grid-cols-7 grid-flow-col">
 					{#each week as { day, display }}
 						{@const date = new Date(year, monthIdx, day)}
+						{@const classTest = classTests.find((x) => x.date.getUTCDate() === day)}
 						{@const absences = !display
 							? []
 							: data.filter((x) => {
@@ -185,7 +198,15 @@
 							title="{absences.length} absences"
 						>
 							{#if display}
+								{#if classTest}
+									📝
+								{/if}
+
 								{day}
+
+								{#if classTest}
+									📝
+								{/if}
 							{/if}
 						</div>
 					{/each}
