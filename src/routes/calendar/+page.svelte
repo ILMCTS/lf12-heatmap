@@ -1,6 +1,7 @@
 <script lang="ts">
 	import absencesData from '$lib/absences-data';
 	import classTestsData from '$lib/class-tests-data';
+	import Chart from '$lib/components/chart.svelte';
 
 	const dateStrLengthWith1Day = 16;
 	const formatDate = (dateStr: string) => {
@@ -61,6 +62,8 @@
 	let monthDayCount: number | null = null;
 	let startMondayOffset: number | null = null;
 	let weeks: { day: number; display: boolean }[][] = [];
+	let chartLabels: string[] = [];
+	let chartData: { label: string; values: number[] }[] = [];
 
 	const loadDataSet = () => {
 		if (data.length > 0) {
@@ -115,16 +118,32 @@
 				: formattedClassTestsData
 		).filter((x) => `${x.date.getUTCFullYear()}-${x.date.getUTCMonth()}` === selectedYearMonth);
 
+		const studentGroups: Record<string, typeof data> = {};
+
+		data.forEach((x) => {
+			const key = `${x.firstName} ${x.lastName}`;
+			studentGroups[key] ??= [];
+			studentGroups[key].push(x);
+		});
+
+		const chartEntries = Object.fromEntries(
+			Object.entries(studentGroups).sort(([, a], [, b]) => a.length - b.length)
+		);
+
+		chartLabels = Object.keys(chartEntries);
+		chartData = [
+			{
+				label: 'Fehltage (entschuldigt)',
+				values: Object.values(chartEntries).map((x) => x.filter((a) => a.status !== 'N').length)
+			},
+			{
+				label: 'Fehltage (nicht entschuldigt)',
+				values: Object.values(chartEntries).map((x) => x.filter((a) => a.status === 'N').length)
+			}
+		];
+
 		loadDataSet();
 	}
-
-	// missing: N, O, V
-	const reasonColors: Record<string, string> = {
-		A: 'bg-green-500', // Attest
-		P: 'bg-red-200', // Privat
-		S: 'bg-red-700', // Schulische Abwesenheit
-		K: 'bg-red-300' // Krank
-	};
 </script>
 
 <div>
@@ -143,7 +162,7 @@
 </div>
 
 {#if data.length > 0 && firstDate && monthIdx && monthDayCount && year}
-	<div class="text-xl">
+	<div class="text-xl mb-4">
 		Monat: {getDisplayMonth(new Date(year, monthIdx))}
 	</div>
 
@@ -159,59 +178,70 @@
 		</div>
 
 		{#key renderKey}
-			{#each weeks as week}
-				<div class="grid grid-cols-7 grid-flow-col">
-					{#each week as { day, display }}
-						{@const date = new Date(year, monthIdx, day)}
-						{@const classTest = classTests.find((x) => x.date.getUTCDate() === day)}
-						{@const absences = !display
-							? []
-							: data.filter((x) => {
-									// too early
-									if (date.getMonth() < x.startDate.getMonth()) {
-										return false;
-									}
+			<div>
+				<div>
+					{#each weeks as week}
+						<div class="grid grid-cols-7 grid-flow-col">
+							{#each week as { day, display }}
+								{@const date = new Date(year, monthIdx, day)}
+								{@const classTest = classTests.find((x) => x.date.getUTCDate() === day)}
+								{@const absences = !display
+									? []
+									: data.filter((x) => {
+											// too early
+											if (date.getMonth() < x.startDate.getMonth()) {
+												return false;
+											}
 
-									// too late
-									if (x.endDate.getMonth() < date.getMonth()) {
-										return false;
-									}
+											// too late
+											if (x.endDate.getMonth() < date.getMonth()) {
+												return false;
+											}
 
-									// first or last day of absence
-									if (
-										date.getDate() === x.startDate.getDate() ||
-										date.getDate() === x.endDate.getDate()
-									) {
-										return true;
-									}
+											// first or last day of absence
+											if (
+												date.getDate() === x.startDate.getDate() ||
+												date.getDate() === x.endDate.getDate()
+											) {
+												return true;
+											}
 
-									// within time frame
-									return x.startDate < date && date < x.endDate;
-								})}
-						{@const red = 50}
-						{@const green = 30 + 20 * absences.length}
-						{@const blue = 50}
+											// within time frame
+											return x.startDate < date && date < x.endDate;
+										})}
+								{@const red = 50}
+								{@const green = 30 + 20 * absences.length}
+								{@const blue = 50}
 
-						<div
-							class="p-2"
-							style="background-color: rgb({red}, {green}, {blue})"
-							title="{absences.length} absences"
-						>
-							{#if display}
-								{#if classTest}
-									📝
-								{/if}
+								<div
+									class="p-2"
+									style="background-color: rgb({red}, {green}, {blue})"
+									title="{absences.length} absences: {absences
+										.map((x) => `${x.firstName} ${x.lastName}`)
+										.sort()
+										.join(', ')}"
+								>
+									{#if display}
+										{#if classTest}
+											📝
+										{/if}
 
-								{day}
+										{day}
 
-								{#if classTest}
-									📝
-								{/if}
-							{/if}
+										{#if classTest}
+											📝
+										{/if}
+									{/if}
+								</div>
+							{/each}
 						</div>
 					{/each}
 				</div>
-			{/each}
+
+				<div>
+					<Chart type={'bar'} labels={chartLabels} data={chartData} />
+				</div>
+			</div>
 		{/key}
 	</div>
 {:else}
